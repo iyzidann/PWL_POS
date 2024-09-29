@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\LevelModel;
 use App\Models\UserModel;
 use Illuminate\Http\Request;
-use PhpParser\Node\Expr\Cast\Object_;
-use PhpParser\Node\Expr\Cast\String_;
 use Yajra\DataTables\Facades\DataTables;
 
 class UserController extends Controller
