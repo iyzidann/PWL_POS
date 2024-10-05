@@ -1,4 +1,4 @@
-@empty($kategori)
+@empty($supplier)
 <div id="modal-master" class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
         <div class="modal-header">
@@ -10,58 +10,63 @@
         <div class="modal-body">
             <div class="alert alert-danger">
                 <h5><i class="icon fas fa-ban"></i> Kesalahan!!!</h5>
-                Data yang anda cari tidak ditemukan.
+                Data yang anda cari tidak ditemukan
             </div>
-            <a href="{{ url('/kategori') }}" class="btn btn-warning">Kembali</a>
+            <a href="{{ url('/supplier') }}" class="btn btn-warning">Kembali</a>
         </div>
     </div>
 </div>
 @else
-<form action="{{ url('/kategori/' . $kategori->kategori_id.'/delete_ajax') }}" method="POST" id="form-delete">
+<form action="{{ url('/supplier/' . $supplier->supplier_id . '/update_ajax') }}" method="POST" id="form-edit">
     @csrf
-    @method('DELETE')
+    @method('PUT')
     <div id="modal-master" class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Hapus Data Kategori;</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Edit Data supplier</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-warning">
-                    <h5><i class="icon fas fa-ban"></i> Konfirmasi!!!</h5>
-                    Apakah Anda ingin menghapus data seperti di bawah ini?
+                <div class="form-group">
+                    <label>Kode supplier</label>
+                    <input value="{{ $supplier->supplier_kode }}" type="text" name="supplier_kode" id="supplier_kode" class="form-control" required>
+                    <small id="error-supplier_kode" class="error-text form-text text-danger"></small>
                 </div>
-                <table class="table table-sm table-bordered table-striped">
-                    <tr>
-                        <th class="text-right col-3">Kode kategori:</th>
-                        <td class="col-9">{{ $kategori->kategori_kode }}</td>
-                    </tr>
-                    <tr>
-                        <th class="text-right col-3">Nama kategori:</th>
-                        <td class="col-9">{{ $kategori->kategori_nama }}</td>
-                    </tr>
-                </table>
+                <div class="form-group">
+                    <label>Nama supplier</label>
+                    <input value="{{ $supplier->supplier_nama }}" type="text" name="supplier_nama" id="supplier_nama" class="form-control" required>
+                    <small id="error-supplier_nama" class="error-text form-text text-danger"></small>
+                </div>
+                <div class="form-group">
+                    <label>Alamat supplier</label>
+                    <input value="{{ $supplier->supplier_alamat }}" type="text" name="supplier_alamat" id="supplier_alamat" class="form-control" required>
+                    <small id="error-supplier_alamat" class="error-text form-text text-danger"></small>
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" data-dismiss="modal" class="btn btn-warning">Batal</button>
-                <button type="submit" class="btn btn-primary">Ya, Hapus</button>
+                <button type="submit" class="btn btn-primary">Simpan</button>
             </div>
         </div>
     </div>
 </form>
 <script>
     $(document).ready(function() {
-        $("#form-delete").validate({
-            rules: {},
+        $("#form-edit").validate({
+            rules: {
+                supplier_kode: { required: true, maxlength: 10 },
+                supplier_nama: { required: true, maxlength: 100 },
+                supplier_alamat: { required: true, maxlength: 100 }
+            },
             submitHandler: function(form) {
                 $.ajax({
                     url: form.action,
                     type: form.method,
                     data: $(form).serialize(),
                     success: function(response) {
-                        if(response.status) {
+                        if (response.status) {
                             $('#myModal').modal('hide');
                             Swal.fire({
                                 icon: 'success',
@@ -72,7 +77,7 @@
                         } else {
                             $('.error-text').text('');
                             $.each(response.msgField, function(prefix, val) {
-                                $('#error-'+prefix).text(val[0]);
+                                $('#error-' + prefix).text(val[0]);
                             });
                             Swal.fire({
                                 icon: 'error',
