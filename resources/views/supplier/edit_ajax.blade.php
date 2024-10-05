@@ -35,12 +35,12 @@
                     <small id="error-supplier_kode" class="error-text form-text text-danger"></small>
                 </div>
                 <div class="form-group">
-                    <label>Nama supplier</label>
+                    <label>Nama Supplier</label>
                     <input value="{{ $supplier->supplier_nama }}" type="text" name="supplier_nama" id="supplier_nama" class="form-control" required>
                     <small id="error-supplier_nama" class="error-text form-text text-danger"></small>
                 </div>
                 <div class="form-group">
-                    <label>Alamat supplier</label>
+                    <label>Alamat Supplier</label>
                     <input value="{{ $supplier->supplier_alamat }}" type="text" name="supplier_alamat" id="supplier_alamat" class="form-control" required>
                     <small id="error-supplier_alamat" class="error-text form-text text-danger"></small>
                 </div>

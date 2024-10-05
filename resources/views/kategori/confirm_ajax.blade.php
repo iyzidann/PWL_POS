@@ -35,11 +35,11 @@
                 </div>
                 <table class="table table-sm table-bordered table-striped">
                     <tr>
-                        <th class="text-right col-3">Kode kategori:</th>
+                        <th class="text-right col-3">Kode Kategori:</th>
                         <td class="col-9">{{ $kategori->kategori_kode }}</td>
                     </tr>
                     <tr>
-                        <th class="text-right col-3">Nama kategori:</th>
+                        <th class="text-right col-3">Nama Kategori:</th>
                         <td class="col-9">{{ $kategori->kategori_nama }}</td>
                     </tr>
                 </table>

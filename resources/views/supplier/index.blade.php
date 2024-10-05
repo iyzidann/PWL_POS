@@ -36,7 +36,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Kode</th>
-                        <th>Nama supplier</th>
+                        <th>Nama Supplier</th>
                         <th>Alamat Supplier</th>
                         <th>Aksi</th>
                     </tr> 
@@ -57,7 +57,7 @@
                 $('#myModal').modal('show');
             });
         }
-        
+
         var dataUser;
         $(document).ready(function() { 
             dataUser = $('#table_user').DataTable({ 
