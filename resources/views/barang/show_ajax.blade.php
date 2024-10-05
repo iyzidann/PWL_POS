@@ -19,7 +19,7 @@
         <div id="modal-master" class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Detail Data barang</h5>
+                    <h5 class="modal-title" id="exampleModalLabel">Detail Data Barang</h5>
                     <button type="button" class="close" data-dismiss="modal" arialabel="Close"><span
                             aria-hidden="true">&times;</span></button>
                 </div>
@@ -29,7 +29,7 @@
                     </div>
                     <table class="table table-sm table-bordered table-striped">
                         <tr>
-                            <th class="text-right col-3">kategori Barang:</th>
+                            <th class="text-right col-3">Kategori Barang:</th>
                             <td class="col-9">{{ $barang->kategori->kategori_nama }}</td>
                         </tr>
                         <tr>
