@@ -30,7 +30,7 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>Kode supplier</label>
+                    <label>Kode Supplier</label>
                     <input value="{{ $supplier->supplier_kode }}" type="text" name="supplier_kode" id="supplier_kode" class="form-control" required>
                     <small id="error-supplier_kode" class="error-text form-text text-danger"></small>
                 </div>
