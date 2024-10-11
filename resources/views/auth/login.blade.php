@@ -25,6 +25,16 @@
                 <div class="card-header text-center"><a href="{{ url('/') }}" class="h1"><b>Admin</b>LTE</a></div> 
                 <div class="card-body"> 
                     <p class="login-box-msg">Sign in to start your session</p> 
+                    @if (session('success'))
+                        <div class="alert alert-success">
+                            {{ session('success') }}
+                        </div>
+                    @endif
+                    @if (session('error'))
+                        <div class="alert alert-danger">
+                            {{ session('error') }}
+                        </div>
+                    @endif
                     <form action="{{ url('login') }}" method="POST" id="form-login"> 
                         @csrf 
                         <div class="input-group mb-3"> 
@@ -58,6 +68,8 @@
                             <!-- /.col --> 
                         </div> 
                     </form> 
+                    <br>
+                    <p>Belum punya akun? <a href="{{ url('registrasi') }}">Register</a></p>
                 </div> 
                 <!-- /.card-body --> 
             </div> 
