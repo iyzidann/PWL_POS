@@ -8,6 +8,7 @@ use App\Http\Controllers\RegistrasiController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WelcomeController;
+use App\Models\KategoriModel;
 use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
@@ -95,6 +96,10 @@ Route::middleware(['auth'])->group(function(){ // artinya semua route dalam grou
         Route::put('/{id}/update_ajax', [KategoriController::class, 'update_ajax']);
         Route::get('/{id}/delete_ajax', [KategoriController::class, 'confirm_ajax']);
         Route::delete('/{id}/delete_ajax', [KategoriController::class, 'delete_ajax']);
+        Route::get('//import', [KategoriController::class, 'import']);     
+        Route::post('/import_ajax', [KategoriController::class, 'import_ajax']);  
+        Route::get('/export_excel', [KategoriController::class, 'export_excel']); 
+        Route::get('/export_pdf', [KategoriController::class, 'export_pdf']);   
         Route::delete('/{id}', [KategoriController::class, 'destroy']);
     });
 
