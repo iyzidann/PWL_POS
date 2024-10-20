@@ -17,7 +17,7 @@ class KategoriController extends Controller
         ];
 
         $page = (object) [
-            'title' => 'Daftar Kategori yang terdaftar dalam sistem'
+            'title' => 'Daftar kategori yang terdaftar dalam sistem'
         ];
 
         $activeMenu = 'kategori';

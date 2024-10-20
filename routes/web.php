@@ -8,6 +8,7 @@ use App\Http\Controllers\RegistrasiController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\WelcomeController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -49,6 +50,10 @@ Route::middleware(['auth'])->group(function(){ // artinya semua route dalam grou
         Route::put('{id}/update_ajax', [UserController::class, 'update_ajax']); // menyimpan perubahan data user ajax
         Route::get('/{id}/delete_ajax', [UserController::class, 'confirm_ajax']);   // untuk tampilkan form confirm delete user ajax
         Route::delete('/{id}/delete_ajax', [UserController::class, 'delete_ajax']); // untuk menghapus data user ajax
+        Route::get('/import', [UserController::class, 'import']);     
+        Route::post('/import_ajax', [UserController::class, 'import_ajax']);
+        Route::get('/export_excel', [UserController::class, 'export_excel']);
+        Route::get('/export_pdf', [UserController::class, 'export_pdf']);  
         Route::delete('/{id}', [UserController::class, 'destroy']); // menghapus data user
     });
 
@@ -70,6 +75,7 @@ Route::middleware(['auth'])->group(function(){ // artinya semua route dalam grou
         Route::delete('/level/{id}/delete_ajax', [LevelController::class, 'delete_ajax']);
         Route::get('/level/import', [LevelController::class, 'import']); // ajax form upload excel
         Route::post('/level/import_ajax', [LevelController::class, 'import_ajax']); // ajax import excel
+        Route::get('/level/export_excel', [LevelController::class, 'export_excel']);
         Route::get('/level/export_pdf', [LevelController::class, 'export_pdf']); 
         Route::delete('/level/{id}', [LevelController::class, 'destroy']);
     });
