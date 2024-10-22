@@ -1,4 +1,13 @@
 <div class="sidebar">
+  <!-- Sidebar user -->
+  <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+    <div class="image">
+      <i class="fas fa-user-circle fa-2x" style="color: white;"></i>
+    </div>
+    <div class="info">
+      <a href="{{ url('/profil') }}" class="d-block">Lihat Profil</a>
+    </div>
+  </div>
   <!-- SidebarSearch Form -->
   <div class="form-inline mt-2">
     <div class="input-group" data-widget="sidebar-search">

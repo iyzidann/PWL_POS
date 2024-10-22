@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LevelController;
+use App\Http\Controllers\ProfilController;
 use App\Http\Controllers\RegistrasiController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
@@ -35,6 +36,11 @@ Route::get('logout', [AuthController::class, 'logout'])->middleware('auth');
 Route::middleware(['auth'])->group(function(){ // artinya semua route dalam group ini harus login dulu
 
     Route::get('/', [WelcomeController::class,'index']);
+
+    Route::group(['prefix' => 'profil'], function() {
+        Route::get('/', [ProfilController::class, 'index']); 
+        Route::put('/{id}', [ProfilController::class, 'update']);
+    });  
 
     Route::group(['prefix' => 'user'], function() {
         Route::get('/', [UserController::class, 'index']);          // menampilkan halaman awal user
