@@ -43,7 +43,7 @@ class ProfilController extends Controller
         $request->validate([
             'username'  => 'required|string|min:3|unique:m_user,username,'.$id.',user_id',
             'nama'      => 'required|string|max:100',
-            'password'  => 'nullable|min:5',
+            'password'  => 'nullable|min:6',
             'level_id'  => 'required|integer',
             'foto_profil' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // validasi gambar
         ]);
