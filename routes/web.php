@@ -39,7 +39,8 @@ Route::middleware(['auth'])->group(function(){ // artinya semua route dalam grou
 
     Route::group(['prefix' => 'profil'], function() {
         Route::get('/', [ProfilController::class, 'index']); 
-        Route::put('/{id}', [ProfilController::class, 'update']);
+        Route::patch('/avatar/{id}', [ProfilController::class, 'updateAvatar']);
+        Route::patch('/account/{id}', [ProfilController::class, 'update']);
     });  
 
     Route::group(['prefix' => 'user'], function() {
