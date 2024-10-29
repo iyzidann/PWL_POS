@@ -11,7 +11,7 @@
                         @if(Auth::user()->avatar)
                             <img id="avatarPreview" src="{{ asset('storage/profil_pictures/' . Auth::user()->avatar) }}" style="width: 96px; height: 96px; border-radius: 50%;">
                         @else
-                            <img id="avatarPreview" src="{{ asset('default-avatar.png') }}" style="width: 96px; height: 96px; border-radius: 50%;">
+                            <i class="fas fa-user-circle" style="font-size: 96px; color: #ccc;"></i>
                         @endif
                         <p class="mb-0 mt-3">{{ Auth::user()->nama }}</p>
                     </div>
