@@ -3,15 +3,16 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Kesalahan</h5>
-                <button type="button" class="close" data-dismiss="modal" aria label="Close"><span
-                        aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
                 <div class="alert alert-danger">
-                    <h5><i class="icon fas fa-ban"></i> Kesalahan!!!</h5>
+                    <h5><i class="icon fas fa-ban"></i> Kesalahan!</h5>
                     Data yang anda cari tidak ditemukan
                 </div>
-                <a href="{{ url('/penjualan') }}" class="btn btn-warning">Kembali</a>
+                <a href="{{ url('/penjualan/') }}" class="btn btn-warning">Kembali</a>
             </div>
         </div>
     </div>
@@ -19,55 +20,56 @@
     <div id="modal-master" class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Detail data penjualan</h5>
-                <button type="button" class="close" data-dismiss="modal" aria label="Close"><span
-                        aria-hidden="true">&times;</span></button>
+                <h5 class="modal-title" id="exampleModalLabel">Detail Data Penjualan</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
-                <table class="table table-bordered table-striped table-hover table-sm">
+                <div class="alert alert-info">
+                    <h5><i class="icon fas fa-info-circle"></i> Informasi!</h5>
+                    Berikut adalah detail data Penjualan:
+                </div>
+                <table class="table table-sm table-bordered table-striped">
                     <tr>
-                        <th>ID</th>
-                        <td>{{ $penjualan->penjualan_id }}</td>
+                        <th class="text-right col-3">Kode Penjualan :</th>
+                        <td class="col-9">{{ $penjualan->penjualan_kode }}</td>
                     </tr>
                     <tr>
-                        <th>User</th>
-                        <td>{{ $penjualan->user->nama }}</td>
+                        <th class="text-right col-3">Nama User :</th>
+                        <td class="col-9">{{ $penjualan->user->nama }}</td>
                     </tr>
                     <tr>
-                        <th>Penjualan kode</th>
-                        <td>{{ $penjualan->penjualan_kode }}</td>
+                        <th class="text-right col-3">Nama Pembeli :</th>
+                        <td class="col-9">{{ $penjualan->pembeli }}</td>
                     </tr>
                     <tr>
-                        <th>Penjualan tanggal</th>
-                        <td>{{ $penjualan->penjualan_tanggal->format('Y-m-d') }}</td>
+                        <th class="text-right col-3">Tanggal Penjualan :</th>
+                        <td class="col-9">{{ \Carbon\Carbon::parse($penjualan->penjualan_tanggal)->format('d-m-Y') }}</td>
                     </tr>
                 </table>
-                <div class="card" style="position: relative; left: 0px; top: 0px;">
-                    <div class="card-header ui-sortable-handle" style="cursor: move;">
-                        <h3 class="card-title">
-                            <i class="ion ion-clipboard mr-1"></i>
-                            Detail penjualan
-                        </h3>
-                    </div>
-                    <div class="card-body">
-                        <ul class="todo-list ui-sortable" data-widget="todo-list">
-                            @foreach ($penjualan->penjualanDetail as $detail)
-                                <li id="detail-{{ $detail->detail_id }}">
-                                    <span class="text">{{ $detail->barang->barang_nama }}</span>
-                                    <small class="badge badge-secondary">
-                                        Jumlah {{ $detail->jumlah }}
-                                    </small>
-                                    <small class="badge badge-success">
-                                        Harga Rp{{ number_format($detail->harga) }}
-                                    </small>
-                                </li>
-                            @endforeach
-                        </ul>
-                    </div>
-                </div>
+                <h5>Detail Barang:</h5>
+                <table class="table table-sm table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Nama Barang</th>
+                            <th>Harga</th>
+                            <th>Jumlah</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($penjualan->penjualan_detail as $detail)
+                            <tr>
+                                <td>{{ $detail->barang->barang_nama }}</td>
+                                <td>{{ $detail->harga }}</td>
+                                <td>{{ $detail->jumlah }}</td>
+                            </tr>
+                    </tbody>
+                    @endforeach
+                </table>
             </div>
             <div class="modal-footer">
-                <button type="button" data-dismiss="modal" class="btn btn-warning">Kembali</button>
+                <button type="button" data-dismiss="modal" class="btn btn-primary">Tutup</button>
             </div>
         </div>
     </div>

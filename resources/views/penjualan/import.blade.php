@@ -4,14 +4,16 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="exampleModalLabel">Import Data Penjualan</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
-                        aria-hidden="true">&times;</span></button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <label>Download Template</label>
-                    <a href="{{ asset('template_penjualan.xlsx') }}" class="btn btn-info btn-sm" download><i
-                            class="fa fa-file-excel"></i>Download</a>
+                    <label> Download Template</label>
+                    <a href="{{ asset('template_penjualan.xlsx') }}" class="btn btn-info btn-sm" download>
+                        <i class="fa fa-file-excel"></i> Download
+                    </a>
                     <small id="error-kategori_id" class="error-text form-text text-danger"></small>
                 </div>
                 <div class="form-group">
@@ -51,8 +53,10 @@
                                 icon: 'success',
                                 title: 'Berhasil',
                                 text: response.message
+                            }).then(() => {
+                                // Refresh halaman setelah notifikasi sukses ditampilkan
+                                window.location.reload();
                             });
-                            tablepenjualan.ajax.reload(); // reload datatable
                         } else { // jika error
                             $('.error-text').text('');
                             $.each(response.msgField, function(prefix, val) {

@@ -61,42 +61,57 @@
 <body>
     <table class="border-bottom-header">
         <tr>
-            <td width="15%" class="text-center"><img src="{{ asset('polinema-bw.png') }}" style="width: 60; height: 60;"></td>
+            <td width="15%" class="text-center"><img class="image" id="image"
+                    src="{{ public_path('polinema-bw.png') }}">
+            </td>
             <td width="85%">
-                <span class="text-center d-block font-11 font-bold mb-1">KEMENTERIAN
-                    PENDIDIKAN, KEBUDAYAAN, RISET, DAN TEKNOLOGI</span>
-                <span class="text-center d-block font-13 font-bold mb-1">POLITEKNIK NEGERI
-                    MALANG</span>
-                <span class="text-center d-block font-10">Jl. Soekarno-Hatta No. 9 Malang
-                    65141</span>
-                <span class="text-center d-block font-10">Telepon (0341) 404424 Pes. 101
-                    105, 0341-404420, Fax. (0341) 404420</span>
+                <span class="text-center d-block font-11 font-bold mb-1">KEMENTERIAN PENDIDIKAN, KEBUDAYAAN, RISET, DAN
+                    TEKNOLOGI</span>
+                <span class="text-center d-block font-13 font-bold mb-1">POLITEKNIK NEGERI MALANG</span>
+                <span class="text-center d-block font-10">Jl. Soekarno-Hatta No. 9 Malang 65141</span>
+                <span class="text-center d-block font-10">Telepon (0341) 404424 Pes. 101-105, 0341-404420, Fax. (0341)
+                    404420</span>
                 <span class="text-center d-block font-10">Laman: www.polinema.ac.id</span>
             </td>
         </tr>
     </table>
-    <h3 class="text-center">LAPORAN DATA PENJUALAN</h4>
-        <table class="border-all">
-            <thead>
-                <tr>
-                    <th class="text-center">No</th>
-                    <th>Nama User</th>
-                    <th>Nama Pembeli</th>
-                    <th>Kode Penjualan</th>
-                    <th>Penjualan Tanggal</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($penjualan as $b)
+    <h3 class="text-center">LAPORAN DATA PENJUALAN</h3>
+    <table class="border-all">
+        <thead>
+            <tr>
+                <th class="text-center">No</th>
+                <th>Tanggal Penjualan</th>
+                <th>User ID</th>
+                <th>Nama Pembeli</th>
+                <th>Kode Penjualan</th>
+                <th>Barang ID</th>
+                <th>Nama Barang</th>
+                <th>Jumlah</th>
+                <th>Harga</th>
+                <th>Sub Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @php
+                $counter = 1;
+            @endphp
+            @foreach ($penjualan as $penj)
+                @foreach ($penj->penjualan_detail as $detail)
                     <tr>
-                        <td class="text-center">{{ $loop->iteration }}</td>
-                        <td>{{ $b->user->nama }}</td>
-                        <td>{{ $b->pembeli }}</td>
-                        <td>{{ $b->penjualan_kode }}</td>
-                        <td>{{ $b->penjualan_tanggal }}</td>
+                        <td class="text-center">{{ $counter++ }}</td> <!-- Counter manual -->
+                        <td>{{ $penj->penjualan_tanggal }}</td>
+                        <td>{{ $penj->user->nama }}</td>
+                        <td>{{ $penj->pembeli }}</td>
+                        <td>{{ $penj->penjualan_kode }}</td>
+                        <td>{{ $detail->barang_id }}</td>
+                        <td>{{ $detail->barang->barang_nama }}</td>
+                        <td>{{ $detail->jumlah }}</td>
+                        <td>{{ $detail->harga }}</td>
+                        <td>{{ $detail->jumlah * $detail->harga }}</td>
                     </tr>
                 @endforeach
-            </tbody>
-        </table>
+            @endforeach
+        </tbody>
+    </table>
 </body>
 </html>

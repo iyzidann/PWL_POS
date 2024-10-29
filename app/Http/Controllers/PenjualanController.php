@@ -17,25 +17,26 @@ class PenjualanController extends Controller
 {
     public function index()
     {
+        $activeMenu = 'penjualan';
         $breadcrumb = (object) [
-            'title' => 'Daftar Penjualan',
+            'title' => 'Data Penjualan',
             'list' => ['Home', 'Penjualan']
         ];
         $page = (object) [
             'title' => 'Daftar penjualan yang terdaftar dalam sistem'
         ];
-        $activeMenu = 'penjualan'; // set menu yang sedang aktif
-
-        return view('Penjualan.index', ['breadcrumb' => $breadcrumb, 'page' => $page, 'activeMenu' => $activeMenu]);
+        $penjualan = PenjualanModel::select('penjualan_id', 'penjualan_tanggal')->get();
+        $barang = BarangModel::select('barang_id', 'barang_nama')->get();
+        $user = UserModel::select('user_id', 'nama')->get();
+        return view('penjualan.index', ['activeMenu' => $activeMenu, 'breadcrumb' => $breadcrumb, 'page' => $page, 'penjualan' => $penjualan, 'barang' => $barang, 'user' => $user]);
     }
 
     public function list(Request $request)
     {
         $penjualan = PenjualanModel::select('penjualan_id', 'user_id', 'pembeli', 'penjualan_kode', 'penjualan_tanggal')
             ->with('user');
-        // Filter data user berdasarkan level_id
-        return DataTables::of($penjualan)
-            ->addIndexColumn() // menambahkan kolom index / no urut (default nama kolom:DT_RowIndex)
+            
+        return DataTables::of($penjualan)->addIndexColumn() // menambahkan kolom index / no urut (default nama kolom:DT_RowIndex)
             ->addColumn('aksi', function ($penjualan) { // menambahkan kolom aksi
                 $btn = '<button onclick="modalAction(\'' . url('/penjualan/' . $penjualan->penjualan_id .
                     '/show_ajax') . '\')" class="btn btn-info btn-sm">Detail</button> ';
@@ -51,195 +52,227 @@ class PenjualanController extends Controller
 
     public function create_ajax()
     {
-        $user = UserModel::select('user_id', 'nama')->get();
-        $barang = BarangModel::select('barang_id', 'barang_nama')->get();
-        return view('penjualan.create_ajax')->with('user', $user)->with('barang', $barang);
+        $penjualan = PenjualanModel::all();
+        $user = UserModel::all();
+        $barang = BarangModel::all();
+        return view('penjualan.create_ajax', ['penjualan' => $penjualan, 'user' => $user, 'barang' => $barang]);
+    }
+
+    public function getHargaBarang($id)
+    {
+        // Cari barang berdasarkan id
+        $barang = BarangModel::find($id);
+        // Periksa apakah barang ditemukan
+        if ($barang) {
+            return response()->json([
+                'status' => true,
+                'harga_jual' => $barang->harga_jual
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Barang tidak ditemukan'
+            ]);
+        }
     }
 
     public function store_ajax(Request $request)
     {
-        //cek apakah request berupa ajax
-        if ($request->ajax() || $request->wantsJson()) {
-            $rules = [
-                'user_id' => 'required|integer',
-                'pembeli' => 'required|string|max:100',
-                'penjualan_kode' => 'required|string|max:20|min:3|unique:t_penjualan,penjualan_kode',
-                'penjualan_tanggal' => 'required|date',
-                'penjualan_details.*.barang_id' => 'required|integer',
-                'penjualan_details.*.jumlah' => 'required|integer',
-                'penjualan_details.*.harga' => 'required|numeric',
-            ];
-            //use Illuminate\Support\Facades\Validator;
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json([
-                    'status' => false, //response status, false: error/gagal, true: berhasil
-                    'message' => 'Validasi Gagal',
-                    'msgField' => $validator->errors(), //pesan error validasi
-                ]);
-            }
-            // Create the transaction
-            $penjualan = penjualanModel::create($request->only(['user_id', 'pembeli', 'penjualan_kode', 'penjualan_tanggal']));
-            // Add transaction details
-            foreach ($request->penjualan_details as $detail) {
-                DetailPenjualanModel::create([
-                    'penjualan_id' => $penjualan->penjualan_id,
-                    'barang_id' => $detail['barang_id'],
-                    'harga' => $detail['harga'],
-                    'jumlah' => $detail['jumlah'],
-                ]);
+        $validator = Validator::make($request->all(), [
+            'user_id' => 'required|numeric',
+            'pembeli' => 'required|string|min:3|max:20',
+            'penjualan_kode' => 'required|string|min:3|max:100|unique:t_penjualan,penjualan_kode',
+            'penjualan_tanggal' => 'required|date',
+            'barang_id' => 'required|array',
+            'barang_id.*' => 'numeric',
+            'harga' => 'required|array',
+            'harga.*' => 'numeric',
+            'jumlah' => 'required|array',
+            'jumlah.*' => 'numeric',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => false,
+                'msgField' => $validator->errors()
+            ]);
+        }
+        try {
+            // Simpan data penjualan
+            $penjualan = new PenjualanModel();
+            $penjualan->user_id = $request->user_id;
+            $penjualan->pembeli = $request->pembeli;
+            $penjualan->penjualan_kode = $request->penjualan_kode;
+            $penjualan->penjualan_tanggal = $request->penjualan_tanggal;
+            $penjualan->save();
+            // Simpan detail barang
+            foreach ($request->barang_id as $index => $barangId) {
+                $penjualan_detail = new DetailPenjualanModel();
+                $penjualan_detail->penjualan_id = $penjualan->penjualan_id;
+                $penjualan_detail->barang_id = $barangId;
+                $penjualan_detail->harga = $request->harga[$index];
+                $penjualan_detail->jumlah = $request->jumlah[$index];
+                $penjualan_detail->save();
             }
             return response()->json([
                 'status' => true,
-                'message' => 'penjualan berhasil disimpan'
+                'message' => 'Data penjualan berhasil disimpan!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Terjadi kesalahan, data gagal disimpan!',
+                'error' => $e->getMessage()
             ]);
         }
     }
-
-    public function edit_ajax(string $id)
+    public function edit_ajax(string $penjualan_id)
     {
-        $penjualan = penjualanModel::with(['penjualanDetail.barang'])->find($id);
-        $user = UserModel::select('user_id', 'nama')->get();
-        $barang = BarangModel::select('barang_id', 'barang_nama')->get();
-        // dd($penjualan->user);
-        return view('penjualan.edit_ajax', ['penjualan' => $penjualan, 'user' => $user, 'barang' => $barang]);
+        $penjualan = PenjualanModel::findOrFail($penjualan_id); // Pastikan gagal dengan benar jika tidak ditemukan
+        $user = UserModel::all(); // Mengambil semua pengguna
+        return view('penjualan.edit_ajax', ['penjualan' => $penjualan, 'user' => $user]);
     }
-
-    public function update_ajax(Request $request, $id)
+    public function update_ajax(Request $request, string $penjualan_id)
     {
         if ($request->ajax() || $request->wantsJson()) {
-            $rules = [
+            $validator = Validator::make($request->all(), [
                 'user_id' => 'required|integer',
-                'pembeli' => 'required|string|max:100',
-                'penjualan_kode' => 'required|string|max:20|min:3|unique:t_penjualan,penjualan_kode,' . $id . ',penjualan_id',
+                'pembeli' => 'required|string',
+                'penjualan_kode' => 'required|string',
                 'penjualan_tanggal' => 'required|date',
-                'penjualan_details.*.barang_id' => 'required|integer',
-                'penjualan_details.*.jumlah' => 'required|integer',
-                'penjualan_details.*.harga' => 'required|numeric',
-            ];
-            $validator = Validator::make($request->all(), $rules);
+            ]);
             if ($validator->fails()) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Validasi gagal.',
-                    'msgField' => $validator->errors(),
+                    'errors' => $validator->errors(),
                 ]);
             }
-            $penjualan = penjualanModel::find($id);
-            if (!$penjualan) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Data tidak ditemukan',
-                ]);
-            }
-            // Update main penjualan data
-            $penjualan->update($request->only(['user_id', 'pembeli', 'penjualan_kode', 'penjualan_tanggal']));
-            // Process transaction details (updating, deleting, and adding new)
-            $existingDetailIds = $penjualan->penjualanDetail->pluck('detail_id')->toArray();
-            $incomingDetailIds = array_keys($request->penjualan_details);
-            // Delete removed details
-            $toDelete = array_diff($existingDetailIds, $incomingDetailIds);
-            DetailPenjualanModel::destroy($toDelete);
-            // Update or create details
-            foreach ($request->penjualan_details as $detailId => $detailData) {
-                if (in_array($detailId, $existingDetailIds)) {
-                    // Update existing detail
-                    DetailPenjualanModel::where('detail_id', $detailId)->update($detailData);
-                } else {
-                    // Add new detail
-                    DetailPenjualanModel::create([
-                        'penjualan_id' => $penjualan->penjualan_id,
-                        'barang_id' => $detailData['barang_id'],
-                        'harga' => $detailData['harga'],
-                        'jumlah' => $detailData['jumlah'],
-                    ]);
-                }
-            }
+            $penjualan = PenjualanModel::findOrFail($penjualan_id);
+            $penjualan->update($request->all());
             return response()->json([
                 'status' => true,
-                'message' => 'Data penjualan berhasil diubah.',
+                'message' => 'Data berhasil diupdate'
             ]);
-        }
-    }
-
-    public function confirm_ajax(string $id)
-    {
-        $penjualan = penjualanModel::with(['user', 'penjualanDetail.barang'])->find($id);
-        return view('penjualan.confirm_ajax', ['penjualan' => $penjualan]);
-    }
-
-    public function delete_ajax(Request $request, string $id)
-    {
-        if ($request->ajax() || $request->wantsJson()) {
-            $penjualan = penjualanModel::find($id);
-            if ($penjualan) {
-                $penjualan->delete();
-                return response()->json([
-                    'status' => true,
-                    'message' => 'Data berhasil dihapus'
-                ]);
-            } else {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Data tidak ditemukan'
-                ]);
-            }
         }
         return redirect('/');
     }
 
+    public function confirm_ajax(string $id)
+    {
+        $penjualan = PenjualanModel::find($id);
+        return view('penjualan.confirm_ajax', ['penjualan' => $penjualan]);
+    }
+
+    public function delete_ajax(Request $request, string $penjualan_id)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            // Cari data penjualan
+            $penjualan = PenjualanModel::findOrFail($penjualan_id);
+            if ($penjualan) {
+                try {
+                    // Hapus semua detail penjualan yang terkait
+                    DetailPenjualanModel::where('penjualan_id', $penjualan_id)->delete();
+                    // Hapus data penjualan
+                    $penjualan->delete();
+                    return response()->json([
+                        'status' => true,
+                        'message' => 'Data penjualan berhasil dihapus'
+                    ]);
+                } catch (\Illuminate\Database\QueryException $e) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Data gagal dihapus karena masih terkait dengan data lain'
+                    ]);
+                }
+            } else {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data penjualan tidak ditemukan'
+                ]);
+            }
+        }
+        return redirect('/');  // Jika bukan ajax request, redirect ke halaman utama
+    }
+
     public function show_ajax(string $id)
     {
-        $penjualan = penjualanModel::with(['user', 'penjualanDetail.barang'])->find($id);
-        return view('penjualan.show_ajax', ['penjualan' => $penjualan]);
+        $penjualan = PenjualanModel::with(['user', 'penjualan_detail.barang'])->find($id);
+        if ($penjualan) {
+            return view('penjualan.show_ajax', [
+                'penjualan' => $penjualan
+            ]);
+        } else {
+            return response()->json([
+                'status' => false,
+                'message' => 'Data tidak ditemukan'
+            ]);
+        }
     }
 
     public function import()
     {
         return view('penjualan.import');
     }
-
+    // Function untuk proses import data melalui AJAX
     public function import_ajax(Request $request)
     {
         if ($request->ajax() || $request->wantsJson()) {
+            // Validasi file
             $rules = [
-                // validasi file harus xls atau xlsx, max 1MB
                 'file_penjualan' => ['required', 'mimes:xlsx', 'max:1024']
             ];
             $validator = Validator::make($request->all(), $rules);
             if ($validator->fails()) {
                 return response()->json([
                     'status' => false,
-                    'message' => 'Validasi Gagal',
+                    'message' => 'Validasi gagal',
                     'msgField' => $validator->errors()
                 ]);
             }
-            $file = $request->file('file_penjualan'); // ambil file dari request
-            $reader = IOFactory::createReader('Xlsx'); // load reader file excel
-            $reader->setReadDataOnly(true); // hanya membaca data
-            $spreadsheet = $reader->load($file->getRealPath()); // load file excel
-            $sheet = $spreadsheet->getActiveSheet(); // ambil sheet yang aktif
-            $data = $sheet->toArray(null, false, true, true); // ambil data excel
-            $insert = [];
-            if (count($data) > 1) { // jika data lebih dari 1 baris
+            // Mengambil file dari request
+            $file = $request->file('file_penjualan');
+            $reader = IOFactory::createReader('Xlsx');
+            $reader->setReadDataOnly(true);
+            $spreadsheet = $reader->load($file->getRealPath());
+            $sheet = $spreadsheet->getActiveSheet();
+            // Mengubah data sheet menjadi array
+            $data = $sheet->toArray(null, false, true, true);
+            $insertPenjualanDetail = [];
+            $penjualanKodeMap = [];
+            if (count($data) > 1) {
                 foreach ($data as $baris => $value) {
-                    if ($baris > 1) { // baris ke 1 adalah header, maka lewati
-                        $insert[] = [
-                            'user_id' => $value['A'],
-                            'pembeli' => $value['B'],
-                            'penjualan_kode' => $value['C'],
-                            'penjualan_tanggal' => now(),
+                    if ($baris > 1) {
+                        // Cek apakah penjualan_kode sudah ada di array penjualan yang akan dimasukkan
+                        if (!isset($penjualanKodeMap[$value['C']])) {
+                            // Jika belum ada, tambahkan ke dalam array dan siapkan untuk insert ke t_penjualan
+                            $penjualan_tanggal = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value['D'])->format('Y-m-d');
+                            // Masukkan data ke t_penjualan
+                            $penjualan = PenjualanModel::create([
+                                'user_id' => $value['A'],
+                                'pembeli' => $value['B'],
+                                'penjualan_kode' => $value['C'],
+                                'penjualan_tanggal' => $penjualan_tanggal,
+                            ]);
+                            // Simpan penjualan_id yang di-generate oleh database
+                            $penjualanKodeMap[$value['C']] = $penjualan->penjualan_id;
+                        }
+                        // Masukkan data ke t_penjualan_detail dengan menghubungkan penjualan_id
+                        $insertPenjualanDetail[] = [
+                            'penjualan_id' => $penjualanKodeMap[$value['C']],
+                            'barang_id' => $value['E'],
+                            'harga' => $value['G'],
+                            'jumlah' => $value['F'],
                             'created_at' => now(),
                         ];
                     }
                 }
-                if (count($insert) > 0) {
-                    // insert data ke database, jika data sudah ada, maka diabaikan
-                    PenjualanModel::insertOrIgnore($insert);
+                // Insert ke t_penjualan_detail secara batch
+                if (count($insertPenjualanDetail) > 0) {
+                    DetailPenjualanModel::insert($insertPenjualanDetail);
                 }
                 return response()->json([
                     'status' => true,
-                    'message' => 'Data berhasil diimport'
+                    'message' => 'Data penjualan berhasil diimport'
                 ]);
             } else {
                 return response()->json([
@@ -250,39 +283,58 @@ class PenjualanController extends Controller
         }
         return redirect('/');
     }
-
+    
     public function export_excel()
     {
-        // ambil data barang yang akan di export
-        $penjualan = penjualanModel::select('user_id', 'penjualan_kode', 'penjualan_tanggal', 'pembeli')
-            ->with('user')
+        // Ambil data penjualan yang akan diexport
+        $penjualan = PenjualanModel::select('penjualan_id', 'user_id', 'pembeli', 'penjualan_kode', 'penjualan_tanggal')
+            ->with(['user', 'penjualan_detail.barang']) // Gunakan relasi 'penjualanDetail' sesuai model
+            ->orderBy('penjualan_tanggal')
             ->get();
+        // Load library excel
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet(); // ambil sheet yang aktif
+        $sheet = $spreadsheet->getActiveSheet(); // Ambil sheet yang aktif
+        // Set header untuk penjualan
         $sheet->setCellValue('A1', 'No');
-        $sheet->setCellValue('B1', 'Supplier_id');
-        $sheet->setCellValue('C1', 'Barang_id');
-        $sheet->setCellValue('D1', 'User_id');
-        $sheet->setCellValue('E1', 'Stok_tanggal');
-        $sheet->setCellValue('F1', 'Stok_Jumlah');
-        $sheet->getStyle('A1:F1')->getFont()->setBold(true); // bold header
-        $no = 1; // nomor data dimulai dari 1
-        $baris = 2; // baris data dimulai dari baris ke 2
-        foreach ($penjualan as $key => $value) {
-            $sheet->setCellValue('A' . $baris, $no);
-            $sheet->setCellValue('B' . $baris, $value->user->nama);
-            $sheet->setCellValue('C' . $baris, $value->pembeli);
-            $sheet->setCellValue('D' . $baris, $value->penjualan_kode);
-            $sheet->setCellValue('E' . $baris, $value->penjualan_tanggal);
-            $baris++;
-            $no++;
+        $sheet->setCellValue('B1', 'Tanggal Penjualan');
+        $sheet->setCellValue('C1', 'User ID');
+        $sheet->setCellValue('D1', 'Nama Pembeli');
+        $sheet->setCellValue('E1', 'Kode Penjualan');
+        $sheet->setCellValue('F1', 'Barang ID');
+        $sheet->setCellValue('G1', 'Nama Barang');
+        $sheet->setCellValue('H1', 'Jumlah');
+        $sheet->setCellValue('I1', 'Harga');
+        $sheet->setCellValue('J1', 'Sub Total');
+        $sheet->getStyle('A1:J1')->getFont()->setBold(true); // Bold header
+        $no = 1;  // Nomor data dimulai dari 1
+        $baris = 2; // Baris data dimulai dari baris ke 2
+        // Loop untuk setiap penjualan
+        foreach ($penjualan as $penj) {
+            // Loop untuk setiap detail penjualan
+            foreach ($penj->penjualan_detail as $detail) {
+                $sheet->setCellValue('A' . $baris, $no);
+                $sheet->setCellValue('B' . $baris, $penj->penjualan_tanggal); // Tanggal penjualan
+                $sheet->setCellValue('C' . $baris, $penj->user->nama); // Nama user
+                $sheet->setCellValue('D' . $baris, $penj->pembeli); // Nama pembeli
+                $sheet->setCellValue('E' . $baris, $penj->penjualan_kode); // Kode penjualan
+                $sheet->setCellValue('F' . $baris, $detail->barang_id); // Barang ID
+                $sheet->setCellValue('G' . $baris, $detail->barang->barang_nama); // Nama barang
+                $sheet->setCellValue('H' . $baris, $detail->jumlah); // Jumlah barang
+                $sheet->setCellValue('I' . $baris, $detail->harga); // Harga per barang
+                $sheet->setCellValue('J' . $baris, $detail->harga * $detail->jumlah); // Jumlah kali harga
+                $baris++;
+                $no++;
+            }
         }
-        foreach (range('A', 'F') as $columnID) {
-            $sheet->getColumnDimension($columnID)->setAutoSize(true); // set auto size untuk kolom
+        // Set auto size untuk kolom
+        foreach (range('A', 'J') as $columnID) {
+            $sheet->getColumnDimension($columnID)->setAutoSize(true);
         }
-        $sheet->setTitle('Data Penjualan'); // set title sheet
+        // Set title sheet
+        $sheet->setTitle('Data Penjualan');
         $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
-        $filename = 'Data Stok ' . date('Y-m-d H:i:s') . '.xlsx';
+        $filename = 'Data Penjualan ' . date('Y-m-d H:i:s') . '.xlsx';
+        // Pengaturan header untuk download file excel
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Cache-Control: max-age=0');
@@ -293,27 +345,20 @@ class PenjualanController extends Controller
         header('Pragma: public');
         $writer->save('php://output');
         exit;
-    } // end function export excel
+    }
 
     public function export_pdf()
     {
-        $penjualan = PenjualanModel::select('user_id', 'penjualan_kode', 'penjualan_tanggal', 'pembeli')
-            ->with('user')
+        // Ambil data penjualan yang akan diexport
+        $penjualan = PenjualanModel::select('penjualan_id', 'penjualan_kode', 'penjualan_tanggal', 'user_id', 'pembeli')
+            ->with(['Penjualan_detail.barang', 'user']) // Pastikan relasi sudah terdefinisi
+            ->orderBy('penjualan_tanggal')
             ->get();
+        // Load view untuk PDF
         $pdf = Pdf::loadView('penjualan.export_pdf', ['penjualan' => $penjualan]);
-        $pdf->setPaper('a4', 'potrait');
-        $pdf->setOption('isRemoteEnabled', true);
+        $pdf->setPaper('a4', 'landscape'); // Set ukuran kertas dan orientasi
+        $pdf->setOption("isRemoteEnabled", true); // Set true jika ada gambar dari URL
         $pdf->render();
-        return $pdf->stream('Data penjualan' . date('Y-m-d H:i:s') . '.pdf');
-    }
-    public function export_detail_pdf($id)
-    {
-        $penjualan = PenjualanModel::with(['user', 'penjualanDetail.barang'])->find($id);
-        // dd($penjualan->penjualanDetail);
-        $pdf = Pdf::loadView('penjualan.export_detail_pdf', ['penjualan' => $penjualan]);
-        $pdf->setPaper('a4', 'potrait');
-        $pdf->setOption('isRemoteEnabled', true);
-        $pdf->render();
-        return $pdf->stream('Data penjualan' . date('Y-m-d H:i:s') . '.pdf');
+        return $pdf->stream('Data Penjualan ' . date('Y-m-d H:i:s') . '.pdf');
     }
 }
