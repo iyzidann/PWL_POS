@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 use App\Models\BarangModel;
 use App\Models\DetailPenjualanModel;
 use App\Models\PenjualanModel;
-use App\Models\TransaksiDetailModel;
-use App\Models\TransaksiModel;
 use App\Models\UserModel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;

@@ -2,7 +2,11 @@
   <!-- Sidebar user -->
   <div class="user-panel mt-3 pb-3 mb-3 d-flex">
     <div class="image">
-      <i class="fas fa-user-circle fa-2x" style="color: #ccc;"></i>
+      @if(Auth::user()->avatar)
+                            <img id="avatarPreview" src="{{ asset('storage/profil_pictures/' . Auth::user()->avatar) }}" style="width: 35px; height: 35px; border-radius: 50%;">
+                        @else
+                            <i class="fas fa-user-circle" style="font-size: 35px; color: #ccc;"></i>
+                        @endif
     </div>
     <div class="info">
       <a href="{{ url('/profil') }}" class="d-block">Lihat Profil</a>
