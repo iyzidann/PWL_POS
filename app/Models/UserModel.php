@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -19,7 +20,14 @@ class UserModel extends Authenticatable implements JWTSubject
 
     protected $table = 'm_user';        // mendefinisikan nama tabel yang digunakan oleh model ini
     protected $primaryKey = 'user_id';  // mendefinisikan primary key dari tabel yang digunakan
-    protected $fillable = ['level_id','username', 'nama', 'password', 'avatar'];
+    protected $fillable = [
+        'level_id',
+        'username', 
+        'nama', 
+        'password', 
+        'image',
+        'avatar'
+    ];
 
     protected $hidden   = ['password']; // jangan di tampilkan saat select
 
@@ -31,6 +39,13 @@ class UserModel extends Authenticatable implements JWTSubject
     public function level(): BelongsTo
     {
         return $this->belongsTo(LevelModel::class, 'level_id', 'level_id');
+    }
+
+    public function image(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($image) => url('/storage/posts/' . $image),
+        );
     }
 
     /**
